@@ -3,7 +3,7 @@
  */
 
 const Lang = imports.lang;
-const St = imports.gi.St;
+const { GObject, St } = imports.gi;
 const MessageTray = imports.ui.messageTray;
 const SessionMessageTray = imports.ui.main.messageTray;
 
@@ -14,29 +14,28 @@ const Icon = Me.imports.src.helpers.icon;
 /*
  * Source for handling job notifications.
  */
-const JobNotificationSource = new Lang.Class({
-	Name: 'JobNotificationSource',
-	Extends: MessageTray.Source,
+var JobNotificationSource = GObject.registerClass(
+class JobNotificationSource extends MessageTray.Source {
 
-	_init: function(title) {
+	_init(title) {
 		// set notification source title
 
-		this.parent(title, 'jenkins_headshot');
+		super._init(title, 'jenkins_headshot');
 
 		// set notification source icon
 		this._setSummaryIcon(this.createNotificationIcon());
 		
 		// add myself to the message try
 		SessionMessageTray.add(this);
-	},
+	}
 
 	// set jenkins logo for notification source icon
-	createNotificationIcon: function() {
+	createNotificationIcon() {
 		return Icon.createNotificationIcon('jenkins_headshot');
-	},
+	}
 
 	// gets called when a notification is clicked
-	open: function(notification) {
+	open(notification) {
 		// close the clicked notification
 		notification.destroy();
 	}

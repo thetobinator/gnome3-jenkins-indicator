@@ -1,4 +1,6 @@
 const St = imports.gi.St;
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+const Utils = Me.imports.src.helpers.utils;
 
 // few static settings
 const ICON_SIZE_NOTIFICATION = 24;
@@ -8,7 +10,7 @@ const ICON_SIZE_INDICATOR = 16;
  * Return status icon.
  */
 function createStatusIcon(icon_name){
-	let params = { icon_name : icon_name, icon_size : ICON_SIZE_INDICATOR, style_class : "system-status-icon"};
+	let params = { gicon: Utils.loadIcon(icon_name), icon_size : ICON_SIZE_INDICATOR, style_class : "system-status-icon"};
 
 	// St.IconType got removed in Gnome 3.6. This is for backwards compatibility with Gnome 3.4.
 	if( St.IconType ){
@@ -22,7 +24,7 @@ function createStatusIcon(icon_name){
  * Return icon for notification.
  */
 function createNotificationIcon(icon_name){
-	let params = { icon_name : icon_name, icon_size : ICON_SIZE_NOTIFICATION};
+	let params = { gicon : Utils.loadIcon(icon_name), icon_size : ICON_SIZE_NOTIFICATION};
 
 	// St.IconType got removed in Gnome 3.6. This is for backwards compatibility with Gnome 3.4.
 	if( St.IconType ){

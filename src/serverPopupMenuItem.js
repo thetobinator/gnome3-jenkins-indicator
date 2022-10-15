@@ -3,8 +3,7 @@
  */
 
 const Lang = imports.lang;
-const St = imports.gi.St;
-const Gio = imports.gi.Gio;
+const { GObject, St, Gio } = imports.gi;
 const PopupMenu = imports.ui.popupMenu;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -14,12 +13,11 @@ const Icon = Me.imports.src.helpers.icon;
 /*
  * Server name and link in the popup menu.
  */
-const ServerPopupMenuItem = new Lang.Class({
-	Name: 'ServerPopupMenuItem',
-	Extends: PopupMenu.PopupBaseMenuItem,
+var ServerPopupMenuItem = GObject.registerClass(
+class ServerPopupMenuItem extends PopupMenu.PopupBaseMenuItem {
 
-	_init: function(settings, params) {
-		this.parent(params);
+	_init(settings, params) {
+		super._init(params);
 		
 		this.settings = settings;
 		
@@ -36,17 +34,17 @@ const ServerPopupMenuItem = new Lang.Class({
 		}
 		// For Gnome 3.10 and above
 		else {
-			this.actor.add_child(this.box);
+			this.add_child(this.box);
 		}
 		
 		// clicking the server menu item opens the servers web frontend with default browser
 		this.connect("activate", Lang.bind(this, function(){
 			Gio.app_info_launch_default_for_uri(this.settings.jenkins_url, global.create_app_launch_context(0, -1));
 		}));
-	},
+	}
 
 	// update menu item label (server name)
-	updateSettings: function(settings) {
+	updateSettings(settings) {
 		this.settings = settings;
 		this.label.text = this.settings.name;
 	}

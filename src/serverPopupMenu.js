@@ -4,8 +4,9 @@
 
 const Lang = imports.lang;
 const Shell = imports.gi.Shell;
-const St = imports.gi.St;
 const Gtk = imports.gi.Gtk;
+const { GObject, St } = imports.gi;
+const Glib = imports.gi.GLib;
 const PopupMenu = imports.ui.popupMenu;
 const Config = imports.misc.config;
 
@@ -21,36 +22,39 @@ const _ = imports.gettext.domain(Me.metadata['gettext-domain']).gettext;
 /*
  * Manages jobs popup menu items.
  */
-const ServerPopupMenu = new Lang.Class({
-	Name: 'ServerPopupMenu',
-	Extends: PopupMenu.PopupMenu,
 
-	_init: function(indicator, sourceActor, arrowAlignment, arrowSide, notification_source, settings, httpSession) {
-		this.parent(sourceActor, arrowAlignment, arrowSide);
-		
+// it's not possible to properly subclass PopupMenu.PopupMenu for some reason... so wrap it around
+var ServerPopupMenu = GObject.registerClass( 
+class ServerPopupMenu extends GObject.Object {
+	_init(indicator, sourceActor, arrowAlignment, arrowSide, notification_source, settings, httpSession) {
+		super._init();
 		this.indicator = indicator;
 		this.notification_source = notification_source;
 		this.settings = settings;
 		this.httpSession = httpSession;
-
+		this.menu = new PopupMenu.PopupMenu(sourceActor, arrowAlignment, arrowSide);
+		
 		// add server menu item
 		this.serverMenuItem = new ServerPopupMenuItem.ServerPopupMenuItem(this.settings);
-		this.addMenuItem(this.serverMenuItem);
+		this.menu.addMenuItem(this.serverMenuItem);
 
 		// add seperator to popup menu
-		this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+		this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-		this.jobSection = new PopupMenuScrollSection.PopupMenuScrollSection();
+		//this.jobSection = new PopupMenuScrollSection.PopupMenuScrollSection();
+		this.jobSection = new PopupMenu.PopupMenuSection();
 
-		this.addMenuItem(this.jobSection);
+		this.menu.addMenuItem(this.jobSection);
 
 		// add seperator to popup menu
-		this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+		this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
 		// add link to settings dialog
 		this._menu_settings = new PopupMenu.PopupMenuItem(_("Settings"));
 		this._menu_settings.connect("activate", function(){
 			// call gnome settings tool for this extension
+			Glib.spawn_command_line_async('gnome-shell-extension-prefs');			
+			/*
 			let app = Shell.AppSystem.get_default().lookup_app("gnome-shell-extension-prefs.desktop");
 			if( app!=null ) {
 				// for Gnome >= 3.12
@@ -64,12 +68,13 @@ const ServerPopupMenu = new Lang.Class({
 					app.launch(global.display.get_current_time_roundtrip(), ['extension:///' + Me.uuid], -1, null);
 				}
 			}
+			*/
 		});
-		this.addMenuItem(this._menu_settings);
-	},
-
+		this.menu.addMenuItem(this._menu_settings);
+	}
+	
 	// insert, delete and update all job items in popup menu
-	updateJobs: function(new_jobs) {
+	updateJobs(new_jobs) {
 		// provide error message if no jobs were found
 		if( new_jobs.length==0 ) {
 			this.indicator.showError(_("No jobs found"));
@@ -120,10 +125,10 @@ const ServerPopupMenu = new Lang.Class({
 				this.jobSection._getMenuItems()[j].destroy();
 			}
 		}
-	},
+	}
 	
 	// update settings
-	updateSettings: function(settings) {
+	updateSettings(settings) {
 		this.settings = settings;
 
 		this.serverMenuItem.updateSettings(this.settings);
@@ -136,4 +141,3 @@ const ServerPopupMenu = new Lang.Class({
 		}
 	}
 });
-

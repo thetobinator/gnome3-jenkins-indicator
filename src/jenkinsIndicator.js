@@ -3,7 +3,7 @@
  */
 
 const Lang = imports.lang;
-const St = imports.gi.St;
+const { GObject, St, Gio } = imports.gi;
 const Mainloop = imports.mainloop;
 const Glib = imports.gi.GLib;
 const Soup = imports.gi.Soup;
@@ -21,12 +21,12 @@ const _ = imports.gettext.domain(Me.metadata['gettext-domain']).gettext;
 /*
  * Represents the indicator in the top menu bar.
  */
-const JenkinsIndicator = new Lang.Class({
-	Name: 'JenkinsIndicator',
-	Extends: PanelMenu.Button,
 
-	_init: function(settings, httpSession) {
-		this.parent(0.25, "Jenkins Indicator", false );
+var JenkinsIndicator = GObject.registerClass(
+class JenkinsIndicator extends PanelMenu.Button {
+
+	_init(settings, httpSession) {
+		super._init(0.25, _('Jenkins Indicator'));
 
 		// the number of the server this indicator refers to
 		this.settings = settings;
@@ -43,19 +43,21 @@ const JenkinsIndicator = new Lang.Class({
 
 		// start off with a blue overall indicator
 		this._iconActor = Icon.createStatusIcon(Utils.jobStates.getIcon(Utils.jobStates.getDefaultState(), this.settings.green_balls_plugin));
-		this.actor.add_actor(this._iconActor);
+		this.add_actor(this._iconActor);
 
 		// add server popup menu
-		this.setMenu(new ServerPopupMenu.ServerPopupMenu(this, this.actor, 0.25, St.Side.TOP, this.notification_source, this.settings, this.httpSession));
+		this.menuWrapper = new ServerPopupMenu.ServerPopupMenu(this, this.actor, 0.25, St.Side.TOP, this.notification_source, this.settings, this.httpSession);
+		
+		this.setMenu(this.menuWrapper.menu);
 
 		// refresh when indicator is clicked
-		this.actor.connect("button-press-event", Lang.bind(this, this.request));
+		this.connect("button-press-event", Lang.bind(this, this.request));
 
 		// enter main loop for refreshing
 		this._mainloopInit();
-	},
+	}
 
-	_mainloopInit: function() {
+	_mainloopInit() {
 		// create new main loop
 		this._mainloop = Mainloop.timeout_add(this.settings.autorefresh_interval*1000, Lang.bind(this, function(){
 			// request new job states if auto-refresh is enabled
@@ -66,10 +68,10 @@ const JenkinsIndicator = new Lang.Class({
 			// returning true is important for restarting the mainloop after timeout
 			return true;
 		}));
-	},
+	}
 
 	// request local jenkins server for current state
-	request: function() {
+	request() {
 		// only update if no update is currently running
 		if( !this._isRequesting ) {
 			this._isRequesting = true;
@@ -118,15 +120,15 @@ const JenkinsIndicator = new Lang.Class({
 				this._isRequesting = false;
 			}
 		}
-	},
+	}
 
 	// update indicator icon and popupmenu contents
-	update: function() {
+	update() {
 		// filter jobs to be shown
 		let displayJobs = Utils.filterJobs(this.jobs, this.settings);
 
 		// update popup menu
-		this.menu.updateJobs(displayJobs);
+		this.menuWrapper.updateJobs(displayJobs);
 
 		// update overall indicator icon
 
@@ -148,48 +150,47 @@ const JenkinsIndicator = new Lang.Class({
 		}
 
 		// set new overall indicator icon representing current jenkins state
-		this._iconActor.icon_name = Utils.jobStates.getIcon(overallState, this.settings.green_balls_plugin);
-	},
+		this._iconActor.gicon = Utils.loadIcon(Utils.jobStates.getIcon(overallState, this.settings.green_balls_plugin));
+	}
 
 	// update settings
-	updateSettings: function(settings) {
+	updateSettings(settings) {
 		this.settings = settings;
 
 		// update server menu item
-		this.menu.updateSettings(this.settings);
+		this.menuWrapper.updateSettings(this.settings);
 
 		// refresh main loop
 		Mainloop.source_remove(this._mainloop);
 		this._mainloopInit();
 
 		this.update();
-	},
+	}
 
 	// displays an error message in the popup menu
-	showError: function(text) {
+	showError(text) {
 		// set default error message if none provided
 		text = text || "unknown error";
 
 		// remove all job menu entries and previous error messages
-		this.menu.jobSection.removeAll();
+		this.menuWrapper.jobSection.removeAll();
 
 		// show error message in popup menu
-		this.menu.jobSection.addMenuItem( new PopupMenu.PopupMenuItem(_("Error") + ": " + text, {style_class: 'error'}) );
+		this.menuWrapper.jobSection.addMenuItem( new PopupMenu.PopupMenuItem(_("Error") + ": " + text, {style_class: 'error'}) );
 
 		// set indicator state to error
-		this._iconActor.icon_name = Utils.jobStates.getIcon(Utils.jobStates.getErrorState(), this.settings.green_balls_plugin);
-	},
+		this._iconActor.gicon = Utils.loadIcon(Utils.jobStates.getIcon(Utils.jobStates.getErrorState(), this.settings.green_balls_plugin));
+	}
 
 	// destroys the indicator
-	destroy: function() {
+	destroy() {
 		// destroy the mainloop used for updating the indicator
 		Mainloop.source_remove(this._mainloop);
 
 		// destroy notification source if used
 		if( this.notification_source )
 			this.notification_source.destroy();
-
-		this.parent();
+		super.destroy();
 	}
 });
 

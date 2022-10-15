@@ -3,11 +3,9 @@
  */
 
 const Lang = imports.lang;
-const St = imports.gi.St;
+const { GObject, St, Gio, Soup } = imports.gi;
 const PopupMenu = imports.ui.popupMenu;
-const Gio = imports.gi.Gio;
 const Glib = imports.gi.GLib;
-const Soup = imports.gi.Soup;
 const MessageTray = imports.ui.messageTray;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -21,17 +19,17 @@ const _ = imports.gettext.domain(Me.metadata['gettext-domain']).gettext;
 /*
  * Represent a job in the popup menu with icon and job name.
  */
-const JobPopupMenuItem = new Lang.Class({
-	Name: 'JobPopupMenuItem',
-	Extends: PopupMenu.PopupBaseMenuItem,
+var JobPopupMenuItem = GObject.registerClass(
+class JobPopupMenuItem extends PopupMenu.PopupBaseMenuItem {
 
-	_init: function(parentMenu, job, notification_source, settings, httpSession, params) {
-		this.parent(params);
+	_init(parentMenu, job, notification_source, settings, httpSession, params) {
+		super._init(params);
 		
 		this.parentMenu = parentMenu;
 		this.notification_source = notification_source;
 		this.settings = settings;
 		this.httpSession = httpSession;
+		this._jenkinsIconName = "";
 		
 		this.box = new St.BoxLayout({ style_class: 'popup-combobox-item' });
 
@@ -82,10 +80,10 @@ const JobPopupMenuItem = new Lang.Class({
 		}
 		// For Gnome 3.10 and above
 		else {
-			this.actor.add_child(this.box);
+			this.add_child(this.box);
 
 			// let the build button use the rest of the box and align it to the right
-			this.actor.add_child(this.button_build, {span: -1, align: St.Align.END});
+			this.add_child(this.button_build);
 		}
 
 		
@@ -93,22 +91,22 @@ const JobPopupMenuItem = new Lang.Class({
 		this.connect("activate", Lang.bind(this, function(){
 			Gio.app_info_launch_default_for_uri(this.getJobUrl(), global.create_app_launch_context(0, -1));
 		}));
-	},
+	}
 
 	// return job name
-	getJobName: function() {
+	getJobName() {
 		return this.label.text;
-	},
+	}
 
 	// return job url
-	getJobUrl: function() {
+	getJobUrl() {
 		return this.jobUrl;
-	},
+	}
 
 	// update menu item text and icon
-	updateJob: function(job) {
+	updateJob(job) {
 		// notification for finished job if job icon used to be clock (if enabled in settings)
-		if( this.settings.notification_finished_jobs && this.icon.icon_name=='jenkins_clock' && Utils.jobStates.getIcon(job.color, this.settings.green_balls_plugin)!='jenkins_clock' )	{
+		if( this.settings.notification_finished_jobs && this._jenkinsIconName=='jenkins_clock' && Utils.jobStates.getIcon(job.color, this.settings.green_balls_plugin)!='jenkins_clock' )	{
 
 			// create notification source first time we have to display notifications or if server name changed
 			if( typeof this.notification_source === 'undefined' || this.notification_source.title !== this.settings.name ) {
@@ -131,11 +129,12 @@ const JobPopupMenuItem = new Lang.Class({
 		}
 		
 		this.label.text = job.name;
-		this.icon.icon_name = Utils.jobStates.getIcon(job.color, this.settings.green_balls_plugin);
-	},
+		this._jenkinsIconName = Utils.jobStates.getIcon(job.color, this.settings.green_balls_plugin);
+		this.icon.gicon = Utils.loadIcon(this._jenkinsIconName);
+	}
 	
 	// update settings
-	updateSettings: function(settings) {
+	updateSettings(settings) {
 		this.settings = settings;
 	}
 });

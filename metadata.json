@@ -1,10 +1,9 @@
 {
-	"shell-version": ["3.6", "3.8", "3.10", "3.12", "3.14", "3.16", "3.18", "3.20", "3.22", "3.24", "3.26"],
+	"shell-version": ["42"],
 	"uuid": "jenkins-indicator@philipphoffmann.de",
 	"name": "Jenkins CI Server Indicator",
 	"description": "Provides an overview of all jobs on your Jenkins CI Server.",
 	"url": "http://www.philipphoffmann.de/gnome-3-shell-extension-jenkins-ci-server-indicator/",
 	"gettext-domain": "jenkins-indicator",
-	"settings-schema": "org.gnome.shell.extensions.jenkins-indicator",
-	"version" : "1.3"
+	"settings-schema": "org.gnome.shell.extensions.jenkins-indicator"
 }

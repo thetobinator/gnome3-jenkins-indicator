@@ -19,6 +19,14 @@ function init() {
 	settingsJSON = Settings.getSettingsJSON(settings);
 }
 
+function appendWrapper(container, element) {
+	if (container.add) {
+		container.add(element);
+	} else {
+		container.append(element);
+	}
+}
+
 // builds a line (icon + label + switch) for a setting
 function buildIconSwitchSetting(icon, label, setting_name, server_num) {
 	let hboxFilterJobs = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL});
@@ -30,9 +38,9 @@ function buildIconSwitchSetting(icon, label, setting_name, server_num) {
 
 	//hboxFilterJobs.pack_start(iconFilterJobs, false, false, 0);
 	//hboxFilterJobs.pack_start(labelFilterJobs, true, true, 0);
-	hboxFilterJobs.append(iconFilterJobs);
-	hboxFilterJobs.append(labelFilterJobs);
-	hboxFilterJobs.append(inputFilterJobs);
+	appendWrapper(hboxFilterJobs, iconFilterJobs);
+	appendWrapper(hboxFilterJobs, labelFilterJobs);
+	appendWrapper(hboxFilterJobs, inputFilterJobs);
 
 	return hboxFilterJobs;
 }
@@ -53,7 +61,7 @@ function addTabPanel(notebook, server_num) {
 
 	// *** jenkins connection ***
 	let labelJenkinsConnection = new Gtk.Label({ label: "<b>" + _("Jenkins connection") + "</b>", use_markup: true, xalign: 0 });
-	vbox.append(labelJenkinsConnection);
+	appendWrapper(vbox, labelJenkinsConnection);
 
 	let vboxJenkinsConnection = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL });
 	
@@ -65,10 +73,9 @@ function addTabPanel(notebook, server_num) {
 		inputServerName.connect("changed", Lang.bind(this, function(input){ tabLabel.set_text(input.text); updateServerSetting(server_num, "name", input.text); }));
 
 		//hboxServerName.pack_start(labelServerName, true, true, 0);
-		//hboxServerName.add(inputServerName);
-		hboxServerName.append(labelServerName);
-		hboxServerName.append(inputServerName);
-		vboxJenkinsConnection.append(hboxServerName);
+		appendWrapper(hboxServerName, labelServerName);
+		appendWrapper(hboxServerName, inputServerName);
+		appendWrapper(vboxJenkinsConnection, hboxServerName);
 
 		// jenkins url
 		let hboxJenkinsUrl = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL});
@@ -78,10 +85,9 @@ function addTabPanel(notebook, server_num) {
 		inputJenkinsUrl.connect("changed", Lang.bind(this, function(input){ updateServerSetting(server_num, "jenkins_url", input.text); }));
 
 		//hboxJenkinsUrl.pack_start(labelJenkinsUrl, true, true, 0);
-		//hboxJenkinsUrl.add(inputJenkinsUrl);
-		hboxJenkinsUrl.append(labelJenkinsUrl);
-		hboxJenkinsUrl.append(inputJenkinsUrl);
-		vboxJenkinsConnection.append(hboxJenkinsUrl);
+		appendWrapper(hboxJenkinsUrl, labelJenkinsUrl);
+		appendWrapper(hboxJenkinsUrl, inputJenkinsUrl);
+		appendWrapper(vboxJenkinsConnection, hboxJenkinsUrl);
 		
 		// use authentication
 		let hboxUseAuthentication = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL});
@@ -95,9 +101,9 @@ function addTabPanel(notebook, server_num) {
 		}));
 		
 		//hboxUseAuthentication.pack_start(labelUseAuthentication, true, true, 0);
-		hboxUseAuthentication.append(labelUseAuthentication);
-		hboxUseAuthentication.append(inputUseAuthentication);
-		vboxJenkinsConnection.append(hboxUseAuthentication);
+		appendWrapper(hboxUseAuthentication, labelUseAuthentication);
+		appendWrapper(hboxUseAuthentication, inputUseAuthentication);
+		appendWrapper(vboxJenkinsConnection, hboxUseAuthentication);
 		
 		// user to authenticate
 		let hboxAuthUser = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL});
@@ -107,9 +113,9 @@ function addTabPanel(notebook, server_num) {
 		inputAuthUser.connect("changed", Lang.bind(this, function(input){ updateServerSetting(server_num, "auth_user", input.text); }));
 
 		//hboxAuthUser.pack_start(labelAuthUser, true, true, 0);
-		hboxAuthUser.append(labelAuthUser);
-		hboxAuthUser.append(inputAuthUser);
-		vboxJenkinsConnection.append(hboxAuthUser);
+		appendWrapper(hboxAuthUser, labelAuthUser);
+		appendWrapper(hboxAuthUser, inputAuthUser);
+		appendWrapper(vboxJenkinsConnection, hboxAuthUser);
 		
 		// api token
 		let hboxApiToken = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL});
@@ -119,19 +125,19 @@ function addTabPanel(notebook, server_num) {
 		inputApiToken.connect("changed", Lang.bind(this, function(input){ updateServerSetting(server_num, "api_token", input.text); }));
 
 		//hboxApiToken.pack_start(labelApiToken, true, true, 0);
-		hboxApiToken.append(labelApiToken);
-		hboxApiToken.append(inputApiToken);
-		vboxJenkinsConnection.append(hboxApiToken);
+		appendWrapper(hboxApiToken, labelApiToken);
+		appendWrapper(hboxApiToken, inputApiToken);
+		appendWrapper(vboxJenkinsConnection, hboxApiToken);
 		
 		// green balls plugin
-		vboxJenkinsConnection.append(buildIconSwitchSetting("green", _("'Green Balls' plugin"), 'green_balls_plugin', server_num));
+		appendWrapper(vboxJenkinsConnection, buildIconSwitchSetting("green", _("'Green Balls' plugin"), 'green_balls_plugin', server_num));
 
-	vbox.append(vboxJenkinsConnection);
+	appendWrapper(vbox, vboxJenkinsConnection);
 
 
 	// *** auto-refresh ***
 	let labelPreferences = new Gtk.Label({ label: "<b>" + _("Auto-refresh") + "</b>", use_markup: true, xalign: 0 });
-	vbox.append(labelPreferences);
+	appendWrapper(vbox, labelPreferences);
 
 	let vboxAutoRefresh = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL });
 
@@ -146,9 +152,9 @@ function addTabPanel(notebook, server_num) {
 		}));
 
 		//hboxAutoRefresh.pack_start(labelAutoRefresh, true, true, 0);
-		hboxAutoRefresh.append(labelAutoRefresh)
-		hboxAutoRefresh.append(inputAutoRefresh);
-		vboxAutoRefresh.append(hboxAutoRefresh);
+		appendWrapper(hboxAutoRefresh, labelAutoRefresh)
+		appendWrapper(hboxAutoRefresh, inputAutoRefresh);
+		appendWrapper(vboxAutoRefresh, hboxAutoRefresh);
 
 		// auto refresh interval
 		let hboxAutorefreshInterval = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL});
@@ -166,16 +172,16 @@ function addTabPanel(notebook, server_num) {
 		inputAutorefreshInterval.connect("value_changed", Lang.bind(inputAutorefreshInterval, function(){ updateServerSetting(server_num, 'autorefresh_interval', this.get_value()); }));
 
 		//hboxAutorefreshInterval.pack_start(labelAutorefreshInterval, true, true, 0);
-		hboxAutorefreshInterval.append(labelAutorefreshInterval);
-		hboxAutorefreshInterval.append(inputAutorefreshInterval);
-		vboxAutoRefresh.append(hboxAutorefreshInterval);
+		appendWrapper(hboxAutorefreshInterval, labelAutorefreshInterval);
+		appendWrapper(hboxAutorefreshInterval, inputAutorefreshInterval);
+		appendWrapper(vboxAutoRefresh, hboxAutorefreshInterval);
 
-	vbox.append(vboxAutoRefresh);
+	appendWrapper(vbox, vboxAutoRefresh);
 
 
 	// *** notifications ***
 	let labelNotifications = new Gtk.Label({ label: "<b>" + _("Notifications") + "</b>", use_markup: true, xalign: 0 });
-	vbox.append(labelNotifications);
+	appendWrapper(vbox, labelNotifications);
 
 	let vboxNotifications = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL});
 
@@ -189,9 +195,9 @@ function addTabPanel(notebook, server_num) {
 		}));
 
 		//hboxNotificationFinishedJobs.pack_start(labelNotificationFinishedJobs, true, true, 0);
-		hboxNotificationFinishedJobs.append(labelNotificationFinishedJobs);
-		hboxNotificationFinishedJobs.append(inputNotificationFinishedJobs);
-		vboxNotifications.append(hboxNotificationFinishedJobs);
+		appendWrapper(hboxNotificationFinishedJobs, labelNotificationFinishedJobs);
+		appendWrapper(hboxNotificationFinishedJobs, inputNotificationFinishedJobs);
+		appendWrapper(vboxNotifications, hboxNotificationFinishedJobs);
 		
 		// stack notifications
 		let hboxStackNotifications = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL});
@@ -203,39 +209,39 @@ function addTabPanel(notebook, server_num) {
 		}));
 	
 		//hboxStackNotifications.pack_start(labelStackNotifications, true, true, 0);
-		hboxStackNotifications.append(labelStackNotifications);
-		hboxStackNotifications.append(inputStackNotifications);
-		vboxNotifications.append(hboxStackNotifications);
+		appendWrapper(hboxStackNotifications, labelStackNotifications);
+		appendWrapper(hboxStackNotifications, inputStackNotifications);
+		appendWrapper(vboxNotifications, hboxStackNotifications);
 
-	vbox.append(vboxNotifications);
+	appendWrapper(vbox, vboxNotifications);
 
 
 	// *** job filters ***
 	let labelFilters = new Gtk.Label({ label: "<b>" + _("Job filters") + "</b>", use_markup: true, xalign: 0 });
-	vbox.append(labelFilters);
+	appendWrapper(vbox, labelFilters);
 
 	let vboxFilters = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL });
 
 		// show running jobs
-		vboxFilters.append(buildIconSwitchSetting("clock", _('Show running jobs'), 'show_running_jobs', server_num));
+		appendWrapper(vboxFilters, buildIconSwitchSetting("clock", _('Show running jobs'), 'show_running_jobs', server_num));
 
 		// show successful jobs
-		vboxFilters.append(buildIconSwitchSetting("blue", _('Show successful jobs'), 'show_successful_jobs', server_num));
+		appendWrapper(vboxFilters, buildIconSwitchSetting("blue", _('Show successful jobs'), 'show_successful_jobs', server_num));
 
 		// show unstable jobs
-		vboxFilters.append(buildIconSwitchSetting("yellow", _('Show unstable jobs'), 'show_unstable_jobs', server_num));
+		appendWrapper(vboxFilters, buildIconSwitchSetting("yellow", _('Show unstable jobs'), 'show_unstable_jobs', server_num));
 
 		// show failed jobs
-		vboxFilters.append(buildIconSwitchSetting("red", _('Show failed jobs'), 'show_failed_jobs', server_num));
+		appendWrapper(vboxFilters, buildIconSwitchSetting("red", _('Show failed jobs'), 'show_failed_jobs', server_num));
 
 		// show disabled jobs
-		vboxFilters.append(buildIconSwitchSetting("grey", _('Show never built jobs'), 'show_neverbuilt_jobs', server_num));
+		appendWrapper(vboxFilters, buildIconSwitchSetting("grey", _('Show never built jobs'), 'show_neverbuilt_jobs', server_num));
 
 		// show disabled jobs
-		vboxFilters.append(buildIconSwitchSetting("grey", _('Show disabled jobs'), 'show_disabled_jobs', server_num));
+		appendWrapper(vboxFilters, buildIconSwitchSetting("grey", _('Show disabled jobs'), 'show_disabled_jobs', server_num));
 
 		// show aborted jobs
-		vboxFilters.append(buildIconSwitchSetting("grey", _('Show aborted jobs'), 'show_aborted_jobs', server_num));
+		appendWrapper(vboxFilters, buildIconSwitchSetting("grey", _('Show aborted jobs'), 'show_aborted_jobs', server_num));
 	
 	 // Jobs to show
 	let hboxJobsToShow = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL});
@@ -245,15 +251,22 @@ function addTabPanel(notebook, server_num) {
 	inputJobsToShow.connect("changed", Lang.bind(this, function(input){ updateServerSetting(server_num, "jobs_to_show", input.text); }));
 
 	//	hboxJobsToShow.pack_start(labelJobsToShow, true, true, 0);
-		hboxJobsToShow.append(labelJobsToShow);
-		hboxJobsToShow.append(inputJobsToShow);
-	vboxFilters.append(hboxJobsToShow);
+		appendWrapper(hboxJobsToShow, labelJobsToShow);
+		appendWrapper(hboxJobsToShow, inputJobsToShow);
+	appendWrapper(vboxFilters, hboxJobsToShow);
 
-	vbox.append(vboxFilters);
+	appendWrapper(vbox, vboxFilters);
 	
 	// button to remove tab
 	//let iconRemoveServer = new Gtk.Image({file: Me.dir.get_path() + "/icons/prefs/stop.png"});
-	let btnRemoveServer = new Gtk.Button({icon_name: "/icons/prefs/stop.png"});
+	let params = {};
+	if (vbox.append) {
+		params.icon_name = "/icons/prefs/stop.png"; 
+	} else {
+		params.image = new Gtk.Image({file: Me.dir.get_path() + "/icons/prefs/stop.png"});
+	}
+
+	let btnRemoveServer = new Gtk.Button(params);
 		
 	btnRemoveServer.connect('clicked', Lang.bind(notebook, function(){
 		if( notebook.get_n_pages()>1 ) {
@@ -268,15 +281,19 @@ function addTabPanel(notebook, server_num) {
 
 	// widget for tab containing label and close button
 	let tabWidget = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL, spacing: 5 });
-	tabWidget.append(tabLabel);
-	tabWidget.append(btnRemoveServer);
-	//tabWidget.show_all();
+	appendWrapper(tabWidget, tabLabel);
+	appendWrapper(tabWidget, btnRemoveServer);
+	if (tabWidget.show_all) {
+		tabWidget.show_all();
+	}
 	
 	// tab content
 	let tabContent = new Gtk.ScrolledWindow({ vexpand: true });
-	//tabContent.add_with_viewport(vbox);
-	tabContent.set_child(vbox);
-	
+	if (tabContent.add_with_viewport) {
+		tabContent.add_with_viewport(vbox);
+	} else {
+		tabContent.set_child(vbox);
+	}
 	// append tab to notebook
 	notebook.append_page(tabContent, tabWidget);
 }
@@ -316,13 +333,15 @@ function buildPrefsWidget() {
 	let frame = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL});
 	
 	// add new server button
-	frame.append(btnNewServer);
+	appendWrapper(frame, btnNewServer);
 	
 	// add notebook
-	frame.append(notebook);
+	appendWrapper(frame, notebook);
 	
 	// show the frame
-	//frame.show_all();
+	if (frame.show_all) {
+	    frame.show_all();
+	}
 
 	return frame;
 }
